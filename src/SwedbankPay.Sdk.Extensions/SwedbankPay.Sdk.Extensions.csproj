@@ -13,9 +13,13 @@
     <AssemblyName>SwedbankPay.Sdk</AssemblyName>
     <RootNamespace>SwedbankPay.Sdk</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageIconUrl />
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="..\icon.png">
+    <None Include="..\..\icon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
@@ -23,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.1" />
-    <PackageReference Include="SwedbankPay.Sdk" Version="1.0.0-beta0512" />
+    <PackageReference Include="SwedbankPay.Sdk" Version="1.1.0-alpha0759" />
   </ItemGroup>
   
 
