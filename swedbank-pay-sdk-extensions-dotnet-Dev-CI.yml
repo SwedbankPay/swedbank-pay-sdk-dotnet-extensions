@@ -50,13 +50,13 @@ steps:
       **/*.sln
     arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersionV2)'
 
-#- task: DotNetCoreCLI@2
-#  displayName: 'Create release'
-#  inputs:
-#    command: 'publish'
-#    publishWebProjects: true
-#    zipAfterPublish: true
-#    arguments: '--output $(Build.ArtifactStagingDirectory) --configuration $(buildConfiguration) -p:Version=$(GitVersion.NuGetVersionV2)'
+- task: DotNetCoreCLI@2
+  displayName: 'Create release'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    zipAfterPublish: true
+    arguments: '--output $(Build.ArtifactStagingDirectory) --configuration $(buildConfiguration) -p:Version=$(GitVersion.NuGetVersionV2)'
 
 
 - task: DotNetCoreCLI@2
