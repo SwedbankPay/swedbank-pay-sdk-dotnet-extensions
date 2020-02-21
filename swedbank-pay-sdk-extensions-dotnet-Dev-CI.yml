@@ -28,7 +28,7 @@ steps:
   displayName: 'Setting up framework for build'
   inputs:
     packageType: 'sdk'
-    version: '2.2.103'
+    version: '3.1.101'
     installationPath: $(Agent.TempDirectory)/dotnet
 
 - task: NuGetToolInstaller@1
