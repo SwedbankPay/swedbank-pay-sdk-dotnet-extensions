@@ -62,7 +62,7 @@ steps:
   displayName: 'Create release'
   inputs:
     command: 'publish'
-    publishWebProjects: true
+    publishWebProjects: false
     zipAfterPublish: true
     arguments: '--output $(Build.ArtifactStagingDirectory) --configuration $(buildConfiguration) -p:Version=$(GitVersion.NuGetVersionV2)'
 
