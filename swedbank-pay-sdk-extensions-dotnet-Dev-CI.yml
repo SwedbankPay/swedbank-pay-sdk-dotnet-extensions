@@ -1,8 +1,8 @@
 trigger:
-- develop
+#- develop
 
 pr:
-- develop
+#- develop
 
 pool:
   name: 'Hosted VS2017'
