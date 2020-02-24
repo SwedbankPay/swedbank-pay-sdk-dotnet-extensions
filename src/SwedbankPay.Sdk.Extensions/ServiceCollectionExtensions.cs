@@ -35,7 +35,8 @@ namespace SwedbankPay.Sdk.Extensions
         }
 
         /// <summary>
-        /// 
+        /// Configures the named HttpClient <seealso cref="SwedbankPayClient"/> with <paramref name="configureClient"/>.
+        ///    This also configures up a <seealso cref="LoggingDelegatingHandler"/> to log on exceptions.
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configureClient"></param>
@@ -46,7 +47,8 @@ namespace SwedbankPay.Sdk.Extensions
         }
 
         /// <summary>
-        /// 
+        /// Configures the named HttpClient <seealso cref="SwedbankPayClient"/> with <paramref name="configureClient"/>.
+        ///    This also configures up a <seealso cref="LoggingDelegatingHandler"/> to log on exceptions.
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configureClient"></param>
