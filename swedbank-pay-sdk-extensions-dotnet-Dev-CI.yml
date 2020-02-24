@@ -38,7 +38,7 @@ steps:
 
 - task: NuGetToolInstaller@1
   inputs:
-    versionSpec: '5.3.1'
+    versionSpec: '5.4.0'
 
 - task: NuGetCommand@2
   displayName: 'Restoring packages'
@@ -54,14 +54,6 @@ steps:
     projects: |
       **/*.sln
     arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersionV2)'
-
-#- task: DotNetCoreCLI@2
-#  displayName: 'Create release'
-#  inputs:
-#    command: 'publish'
-#    publishWebProjects: false
-#    zipAfterPublish: true
-#    arguments: '--output $(Build.ArtifactStagingDirectory) --configuration $(buildConfiguration) -p:Version=$(GitVersion.NuGetVersionV2)'
 
 
 - task: DotNetCoreCLI@2
