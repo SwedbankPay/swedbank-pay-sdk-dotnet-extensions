@@ -79,6 +79,7 @@ steps:
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish .net core build artifacts'
+  condition: eq(variables['Build.SourceBranchName'], 'master')
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
