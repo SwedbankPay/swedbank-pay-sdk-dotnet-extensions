@@ -1,86 +1,69 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+name: Build
 
-trigger:
-- hotfix/*
-- release/*
-- master
-- refs/tags/*
-- develop
+on: [push]
 
-pr:
-- master
-- develop
+env: 
+  Configuration: Release 
+jobs:
+  
+  variables:
+    name: Create variables
+    runs-on: ubuntu-20.04
+    outputs:
+      ENVIRONMENT: ${{ steps.setoutputvariables.outputs.ENVIRONMENT }}
+      NUGETVERSIONV2: ${{ steps.setoutputvariables.outputs.NUGETVERSIONV2 }}
+      FULLSEMVER:  ${{ steps.gitversion.outputs.fullSemVer }}
+       
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.6
+        with:
+          versionSpec: '5.x.x'
+ 
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
+ 
+      - name: Use GitVersion
+        id: gitversion # step id used as reference for output values
+        uses: gittools/actions/gitversion/execute@v0.9.6
+      
+      - id: setoutputvariables
+        name: Set output variables
+        run: |
+            echo "::set-output name=NUGETVERSIONV2::${NUGETVERSIONV2}"
+            echo "::set-output name=FULLSEMVER::${FULLSEMVER}"
+  
+  build:
+    runs-on: ubuntu-20.04
+    needs: [variables]
 
+    steps:
+    - uses: actions/checkout@v2
 
-pool:
-  name: 'Hosted VS2017'
-  demands:
-  - msbuild
-  - visualstudio
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
 
-variables:
-  GitVersion.SemVer: ''
+    - name: Install dependencies
+      run: dotnet restore ./src/SwedbankPay.Sdk.Extensions.sln
 
-steps:
-- task: UseDotNet@2
-  displayName: 'Setting up framework for build'
-  inputs:
-    packageType: 'sdk'
-    version: '2.1.804'
-    installationPath: $(Agent.TempDirectory)/dotnet
+    - name: Build solution
+      run: dotnet build ./src/SwedbankPay.Sdk.Extensions.sln
 
-- task: GitVersion@5
-  displayName: GitVersion
-  inputs:
-    versionSpec: '5.x'
-    runtime: 'core'
-    useConfigFile: true
-    configFilePath: 'GitVersion.yml'
+    - name: Archive SwedbankPay.Sdk.Extensions
+      uses: actions/upload-artifact@v2
+      with:
+        name: SwedbankPay.Sdk.Extensions
+        path: src/SwedbankPay.Sdk.Extensions/bin/*
 
-- task: UseDotNet@2
-  displayName: 'Setting up framework for build'
-  inputs:
-    packageType: 'sdk'
-    version: '3.1.101'
-    installationPath: $(Agent.TempDirectory)/dotnet
-
-- task: NuGetToolInstaller@1
-  inputs:
-    versionSpec: '5.4.0'
-
-- task: NuGetCommand@2
-  displayName: 'Restoring packages'
-  inputs:
-     command: 'restore'
-     restoreSolution: '$(Build.SourcesDirectory)\src\SwedbankPay.Extensions.Sdk.sln'
-     feedsToUse: 'select'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Build solution for .net core projects'
-  inputs:
-    command: 'build'
-    projects: |
-      **/*.sln
-    arguments: '--configuration $(BuildConfiguration) /p:Version=$(GitVersion.NuGetVersionV2)'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Create NuGet Package - $(buildConfiguration) Version'
-  inputs:
-    command: 'pack'
-    packagesToPack: '$(Build.SourcesDirectory)\src\SwedbankPay.Sdk.Extensions\SwedbankPay.Sdk.Extensions.csproj'
-    packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-    nobuild: true
-    versioningScheme: 'off'
-    buildProperties: 'PackageVersion=$(GitVersion.NuGetVersionV2)'
-
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish .net core build artifacts'
-  condition: eq(variables['Build.SourceBranchName'], 'master')
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    - name: Publish to NuGet
+      if: startsWith(github.ref, 'refs/tags/') # Only publish tagged commits
+      env:
+        PROJECT_FILE: src/SwedbankPay.Sdk.Infrastructure/SwedbankPay.Sdk.Infrastructure.csproj
+        VERSION_NUMBER: ${{ needs.variables.outputs.FULLSEMVER }}
+        NUGET_KEY: ${{ secrets.NUGET_KEY}}
+        DEBUG: true
+      run: .github/workflows/nuget_push.sh
