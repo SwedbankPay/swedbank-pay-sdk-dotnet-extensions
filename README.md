@@ -1,6 +1,6 @@
-# Swedbank Pay SDK for .NET Extensions
+# Swedbank Pay SDK Extensions for .NET
 
-![Swedbank Pay SDK for .NET Extensions][opengraph-image]
+![Swedbank Pay SDK Extensions for .NET][opengraph-image]
 
 ## About
 
