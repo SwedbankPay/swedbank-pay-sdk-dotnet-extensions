@@ -1,0 +1,69 @@
+name: Build and publish
+
+on: [push]
+
+env: 
+  Configuration: Release 
+jobs:
+  
+  variables:
+    name: Create variables
+    runs-on: ubuntu-20.04
+    outputs:
+      ENVIRONMENT: ${{ steps.setoutputvariables.outputs.ENVIRONMENT }}
+      NUGETVERSIONV2: ${{ steps.setoutputvariables.outputs.NUGETVERSIONV2 }}
+      FULLSEMVER:  ${{ steps.gitversion.outputs.fullSemVer }}
+       
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.6
+        with:
+          versionSpec: '5.x.x'
+ 
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
+ 
+      - name: Use GitVersion
+        id: gitversion # step id used as reference for output values
+        uses: gittools/actions/gitversion/execute@v0.9.6
+      
+      - id: setoutputvariables
+        name: Set output variables
+        run: |
+            echo "::set-output name=NUGETVERSIONV2::${NUGETVERSIONV2}"
+            echo "::set-output name=FULLSEMVER::${FULLSEMVER}"
+  
+  build:
+    runs-on: ubuntu-20.04
+    needs: [variables]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    - name: Install dependencies
+      run: dotnet restore ./src/SwedbankPay.Sdk.Extensions.sln
+
+    - name: Build solution
+      run: dotnet build ./src/SwedbankPay.Sdk.Extensions.sln
+
+    - name: Archive SwedbankPay.Sdk.Extensions
+      uses: actions/upload-artifact@v2
+      with:
+        name: SwedbankPay.Sdk.Extensions
+        path: src/SwedbankPay.Sdk.Extensions/bin/*
+
+    - name: Publish to NuGet
+      if: startsWith(github.ref, 'refs/tags/') # Only publish tagged commits
+      env:
+        PROJECT_FILE: src/SwedbankPay.Sdk.Extensions/SwedbankPay.Sdk.Extensions.csproj
+        VERSION_NUMBER: ${{ needs.variables.outputs.FULLSEMVER }}
+        NUGET_KEY: ${{ secrets.NUGET_KEY}}
+        DEBUG: true
+      run: .github/workflows/nuget_push.sh
